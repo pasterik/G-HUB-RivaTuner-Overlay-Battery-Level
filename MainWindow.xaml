@@ -1,0 +1,12 @@
+﻿<Window x:Class="GHUB_Overlay.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:tb="clr-namespace:Hardcodet.Wpf.TaskbarNotification;assembly=Hardcodet.NotifyIcon.Wpf"
+        Title="TrayApp" Height="0" Width="0" ShowInTaskbar="False" WindowStyle="None" Visibility="Hidden">
+    <Grid>
+        <tb:TaskbarIcon x:Name="MyNotifyIcon"
+                IconSource="C:\Users\Roman\source\repos\GHUB_Overlay\Resources\123.ico"
+                ToolTipText="GHUB Overlay">
+        </tb:TaskbarIcon>
+    </Grid>
+</Window>
