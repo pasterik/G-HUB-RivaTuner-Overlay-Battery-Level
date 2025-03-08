@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GHUB_Overlay.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GHUB_Overlay
+namespace GHUB_Overlay.RivatunerFolder.Rivatuner
 {
     public class Rivatuner
     {
@@ -42,7 +43,7 @@ namespace GHUB_Overlay
                     RunRiva();
                 }
 
-                string path = IntPtr.Size == 4 ? @"x86/rivatuner.dll" : @"x64/rivatuner.dll";
+                string path = nint.Size == 4 ? @"x86/rivatuner.dll" : @"x64/rivatuner.dll";
                 Console.WriteLine($"Attempting to load DLL from: {Path.GetFullPath(path)}");
 
                 unsafe
@@ -90,5 +91,38 @@ namespace GHUB_Overlay
         }
         [DllImport("rivatuner", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool print(string text);
+        private void PrintDeviceInfo()
+        {
+            var trueDevice = DeviceManager.deviceStates.Where(c => c.Value).Select(c => c.Key).ToList();
+            var selectDevice = DeviceManager.devices.Where(c => trueDevice.Contains(c.id)).ToList();
+            string text = string.Empty;
+            if (selectDevice != null)
+            {
+                foreach (var item in selectDevice)
+                {
+                    if (DeviceManager.deviceStates[item.id] && item.deviceState == Device.State.ACTIVE)
+                    {
+                        text += "<P2><C=99A8FE>" + item.displayName + " " + "<C>" + item.percentage.ToString() + "<S=60>" + " " + "%" + "<S>" + "\n";
+                    }
+                    else
+                    {
+                        text += "<P2><C=FF0000>" + item.displayName + " " + "<C>" + "\n";
+                    }
+                    print(text);
+                }
+            }
+            else
+            {
+                print(string.Empty);
+            }
+        }
+        public async Task PeriodicPrintDeviceInfo()
+        {
+            while (true)
+            {
+                PrintDeviceInfo();
+                await Task.Delay(100);
+            }
+        }
     }
 }

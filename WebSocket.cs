@@ -45,7 +45,7 @@ namespace GHUB_Overlay
                 client.Options.SetRequestHeader("Cache-Control", "no-cache");
                 client.Options.SetRequestHeader("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits");
                 client.Options.AddSubProtocol("json");
-                /*
+                
                 var newDevice1 = new Device("d01", "ACTIVE", "displayName1", "deviceType");
                 var newDevic1 = new Device("d02", "ACTIVE", "displayName2", "deviceType");
                 var newDevic2 = new Device("d03", "ACTIVE", "displayName3", "deviceType");
@@ -61,7 +61,7 @@ namespace GHUB_Overlay
                 existingDevice1.charging = false;
                 existingDevice2.charging = false;
                 existingDevice3.charging = false;
-                */
+                
 
                 try
                 {
@@ -133,8 +133,16 @@ namespace GHUB_Overlay
                                             }
                                             else
                                             {
-                                                existingDevice.charging = existingDevice.charging;
-                                                existingDevice.percentage = existingDevice.percentage;
+                                                if (existingDevice.deviceState == Device.State.ACTIVE)
+                                                {
+                                                    existingDevice.charging = existingDevice.charging;
+                                                    existingDevice.percentage = existingDevice.percentage;
+                                                }
+                                                else
+                                                {
+                                                    existingDevice.charging = false;
+                                                    existingDevice.percentage = null;
+                                                }
                                             }
                                         }
                                     }
@@ -146,8 +154,8 @@ namespace GHUB_Overlay
                                 }
                             }
                         }
-                        //DisplayDevices();
-                        await Task.Delay(1000);
+                        DisplayDevices();
+                        await Task.Delay(200);
                         IsRunning = true;
                     }
                 }
@@ -165,9 +173,10 @@ namespace GHUB_Overlay
         {
             foreach (var device in DeviceManager.devices)
             {
-                Console.WriteLine($"ID: {device.id}, State: {device.state}, Display Name: {device.displayName}, Device Type: {device.deviceType}, Percentage: {device.percentage}, Charging: {device.charging}");
+                Console.WriteLine($"ID: {device.id}, State: {device.deviceState}, Display Name: {device.displayName}, Device Type: {device.deviceType}, Percentage: {device.percentage}, Charging: {device.charging}");
             }
         }
+
 
         public async Task Stop()
         {

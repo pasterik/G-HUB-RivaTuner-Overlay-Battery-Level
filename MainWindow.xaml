@@ -5,7 +5,7 @@
         Title="TrayApp" Height="0" Width="0" ShowInTaskbar="False" WindowStyle="None" Visibility="Hidden">
     <Grid>
         <tb:TaskbarIcon x:Name="MyNotifyIcon"
-                IconSource="C:\Users\Roman\source\repos\GHUB_Overlay\Resources\123.ico"
+              
                 ToolTipText="GHUB Overlay">
         </tb:TaskbarIcon>
     </Grid>

@@ -1,49 +1,49 @@
-﻿using System.Diagnostics;
+﻿using GHUB_Overlay.Model;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
-
+using System.Windows.Media.Imaging;
+using GHUB_Overlay.RivatunerFolder.Rivatuner;
+using System.Net.WebSockets;
 
 namespace GHUB_Overlay
 {
     public partial class MainWindow : Window
     {
-        private WebSocket webs;
         string activeDeviceId = null;
-        public string? ToolTipText { get; set; }
+        string ToolTipText = null;
+        private  Rivatuner _rivatuner;
+        private  WebSocket _webSocket;
 
         public MainWindow()
         {
             InitializeComponent();
+            CreateTrayMenu();
             Start();
         }
-
-        private async Task PeriodicPrintDeviceInfo()
+        public void StartTask()
         {
-            while (true)
-            {
-                PrintDeviceInfo();
-                await Task.Delay(100);
-            }
+            _webSocket = new WebSocket();
+            _rivatuner = new Rivatuner(); 
         }
+
 
         public async Task Start()
         {
-            //IScreen screen = new GHUB_Overlay.ScreenFolder.Screen();
-            var webs = new WebSocket();
-            webs.WebSocketStart();
+            StartTask();
+            _webSocket.WebSocketStart();
             bool start = true;
 
             await Task.Delay(2000);
-            _ = PeriodicPrintDeviceInfo();
+            await _rivatuner.PeriodicPrintDeviceInfo();
 
             while (start)
             {
-                if (webs.IsRunning)
+                if (_webSocket.IsRunning)
                 {
-
-                    SetWebSocket(webs);
                     CreateTrayMenu();
                     if (!Rivatuner.IsRivaRunning())
                     {
@@ -64,79 +64,61 @@ namespace GHUB_Overlay
             }
         }
 
-        public void SetWebSocket(WebSocket websocket)
-        {
-            webs = websocket;
-        }
-        private void PrintDeviceInfo()
-        {
-            string firstTrueDevice =  DeviceManager.deviceStates.Where(c => c.Value).Select(c => c.Key).FirstOrDefault()!;
-            var selectDevice = DeviceManager.devices.FirstOrDefault(c => c.id == firstTrueDevice);
-            if (selectDevice != null) {
-                if (DeviceManager.deviceStates[selectDevice.id] && selectDevice.state == true)
-                {
-                    string text = "<P2><C=99A8FE>" + selectDevice.displayName + " " + "<C>" + selectDevice.percentage.ToString() + "<S=60>" + " " + "%" + "<S>";
-                    Rivatuner.print(text);
-                }
-                else
-                {
-                    Rivatuner.print(String.Empty);
-                }
-            }
-            else
-            {
-                Rivatuner.print(String.Empty);
-            }
-        }
+     
+
         private async void Exit_Click(object sender, RoutedEventArgs e)
         {
-            if (webs != null && webs.IsRunning)
+            if (_webSocket != null && _webSocket.IsRunning)
             {
-                await webs.Stop();
+                await _webSocket.Stop();
             }
             MyNotifyIcon.Dispose();
             Rivatuner.print(String.Empty);
             Application.Current.Shutdown(); 
         }
+        
 
         private void CreateTrayMenu()
         {
             var contextMenu = new ContextMenu();
-            
-            var devicesMenuItem = new MenuItem
-            {
-                Header = "Девайси",
 
-            };
-
-            foreach (var item in DeviceManager.devices)
+            contextMenu.Opened += (sender, args) =>
             {
-                var menuItem = new MenuItem
+                contextMenu.Items.Clear();
+
+                var devicesMenuItem = new MenuItem
                 {
-                    Header = item.displayName,
-                    IsChecked = DeviceManager.deviceStates.ContainsKey(item.id) && DeviceManager.deviceStates[item.id],
-                    Tag = item.id
+                    Header = "Девайси",
                 };
 
-                menuItem.Click += DeviceMenuItem_Click;
-                devicesMenuItem.Items.Add(menuItem);
-            }
+                foreach (var item in DeviceManager.devices)
+                {
+                    if (item.deviceState != Device.State.ABSENT)
+                    {
+                        var menuItem = new MenuItem
+                        {
+                            Header = item.displayName,
+                            IsChecked = DeviceManager.deviceStates.ContainsKey(item.id) && DeviceManager.deviceStates[item.id],
+                            Tag = item.id,
+                        };
+                        menuItem.Click += DeviceMenuItem_Click;
+                        devicesMenuItem.Items.Add(menuItem);
+                    }
+                }
 
-            contextMenu.Items.Add(devicesMenuItem);
+                contextMenu.Items.Add(devicesMenuItem);
 
-            var exitMenuItem = new MenuItem
-            {
-                Header = "Вихід"
+                var exitMenuItem = new MenuItem
+                {
+                    Header = "Вихід"
+                };
+                exitMenuItem.Click += Exit_Click;
+
+                contextMenu.Items.Add(exitMenuItem);
             };
-            exitMenuItem.Click += Exit_Click;
-
-            contextMenu.Items.Add(exitMenuItem);
 
             MyNotifyIcon.ContextMenu = contextMenu;
         }
-
-
-
 
         private void DeviceMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -152,8 +134,8 @@ namespace GHUB_Overlay
                 {
                     if (activeDeviceId != null && activeDeviceId != deviceId)
                     {
-                        DeviceManager.deviceStates[activeDeviceId] = false;
-                        UpdateTrayMenu();
+                        //DeviceManager.deviceStates[activeDeviceId] = false;
+                        CreateTrayMenu();
                     }
 
                     activeDeviceId = deviceId;
@@ -166,13 +148,6 @@ namespace GHUB_Overlay
                 menuItem.IsChecked = isEnabled; 
 
             }
-        }
-
-
-
-        private void UpdateTrayMenu()
-        {
-            CreateTrayMenu();
         }
     }
 }
