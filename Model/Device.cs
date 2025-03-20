@@ -6,6 +6,7 @@ namespace GHUB_Overlay.Model
     {
         public string? id { get; set; }
         public State deviceState { get; private set; } = State.NOT_CONNECTED;
+        public Type deviceType { get; private set; } = Type.NONE;
 
         public enum State
         {
@@ -13,9 +14,14 @@ namespace GHUB_Overlay.Model
             NOT_CONNECTED,
             ABSENT
         }
-
+        public enum Type
+        {
+            KEYBOARD,
+            MOUSE,
+            HEADSET,
+            NONE
+        }
         public string? displayName { get; set; }
-        public string? deviceType { get; set; }
         public int? percentage { get; set; }
         public bool? charging { get; set; }
         public Device(string? id, string? stateString, string? displayName, string? deviceType)
@@ -23,7 +29,7 @@ namespace GHUB_Overlay.Model
             this.id = id;
             SetState(stateString);
             this.displayName = displayName;
-            this.deviceType = deviceType;
+            SetDeviceType(deviceType);
         }
 
         public void SetState(string stateString)
@@ -35,6 +41,17 @@ namespace GHUB_Overlay.Model
             else
             {
                 deviceState = State.NOT_CONNECTED;
+            }
+        }
+        public void SetDeviceType(string stateType)
+        {
+            if (Enum.TryParse(stateType, out Type parsedType))
+            {
+                deviceType = parsedType;
+            }
+            else
+            {
+                deviceType = Type.NONE;
             }
         }
     }

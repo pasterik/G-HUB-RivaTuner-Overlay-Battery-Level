@@ -96,7 +96,7 @@ namespace GHUB_Overlay.RivatunerFolder.Rivatuner
             var trueDevice = DeviceManager.deviceStates.Where(c => c.Value).Select(c => c.Key).ToList();
             var selectDevice = DeviceManager.devices.Where(c => trueDevice.Contains(c.id)).ToList();
             string text = string.Empty;
-            if (selectDevice != null)
+            if (selectDevice.Count() > 0)
             {
                 foreach (var item in selectDevice)
                 {
@@ -113,8 +113,10 @@ namespace GHUB_Overlay.RivatunerFolder.Rivatuner
             }
             else
             {
+                
                 print(string.Empty);
             }
+            
         }
         public async Task PeriodicPrintDeviceInfo()
         {
